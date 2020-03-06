@@ -1,4 +1,4 @@
-console.log("Inicio do projeto");
+
 /*const express = require('express'); // Requerendo o arquivo do express
 
 const app = express();
@@ -10,6 +10,9 @@ app.get('/Usuarios', (req, res)=>{return res.json({nome:"José"})});//Send é pa
 app.put('/Usuarios/2', (req, res)=>{return res.json({nome:"Pedro"})});
 
 app.listen(3333);*/
+const{bd_config}= require("./config.json");
+const Pool = require("pg").Pool;
+const pool = new Pool(bd_config);
 
 const express = require('express');
 
@@ -69,5 +72,88 @@ app.put("/prestadores/:id",(req, res)=>{return res.json(req.body)});
 
 app.post("/prestadores",(req, res)=>{return res.json(req.body)});
 
-app.listen(3333);
+
+// ROTAS DA API FUNCIONANOD COM ROTAS USUARIOS//
+
+
+
+app.get("/usuarios",(req,res)=>{
+    pool.query("SELECT * FROM usuarios",(error,results)=>{
+            if(error){
+                throw error;
+            }
+            res.json(results.rows);
+    });
+});
+
+app.get("/usuarios/:id",(req,res) =>{
+    const id = parseInt(req.params.id);
+
+    pool.query(
+        "SELECT * FROM usuarios WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.json(results.rows);
+        }
+    );
+});
+
+app.delete("/usuarios/:id",(req,res) =>{
+    const id = parseInt(req.params.id);
+
+    pool.query(
+        "DELETE FROM usuarios WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.send(`usuario deletado com ID: ${id}` );
+        }
+    );
+});
+
+app.put("/usuarios/:id",(req,res) =>{
+    const id = parseInt(req.params.id);
+    const {
+        nome, idade
+        }= req.body;
+    pool.query(
+        "UPDATE usuarios SET nome = $2, idade = $3 WHERE id = $1",
+        [id, nome, idade],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`usuario alterado com id: ${id}`);
+        }
+    );
+});
+
+app.post("/usuarios",(req,res) =>{
+    const {id, nome, idade
+        }= req.body;
+    pool.query(
+        "INSERT INTO usuarios (id, nome, idade) VALUES($1, $2, $3)",
+        [id, nome,idade],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`usuario adicionado com id: ${results.insertId}`);
+
+        }
+    );
+});
+
+app.listen(3333),() =>{
+    console.log("App running on port 3333.")
+};
+
+
+
+
 
