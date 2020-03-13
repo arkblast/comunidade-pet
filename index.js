@@ -24,55 +24,371 @@ app.use(bodyParser.json());
 
 
 
-app.get("/servicos",(req,res)=>{return res.send([{id:3, valor:"50.00",tipo:"banho",prestador_id:1},{id:1, valor:"10.00", tipo:"vacina",prestador_id:2}]);});
+app.get("/servicos",(req,res)=>{
+    pool.query("SELECT * FROM servicos",(error,results)=>{
+            if(error){
+                throw error;
+            }
+            res.json(results.rows);
+    });
+});
+app.get("/servicos/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
 
-app.get("/servicos/:id",(req, res)=>{return res.json({id:req.params.id, valor:"50.00",tipo:"banho"})});
+    pool.query(
+        "SELECT * FROM servicos WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.json(results.rows);
+        }
+    );
+});
 
-app.delete("/servicos/:id",(req, res)=>{return res.json({message:"Serviço removido"})});
+app.delete("/servicos/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
 
-app.put("/servicos/:id",(req, res)=>{return res.json(req.body)});
+    pool.query(
+        "DELETE FROM servicos WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.send(`servico deletado com ID: ${id}` );
+        }
+    );
+});
 
-app.post("/servicos",(req, res)=>{return res.json(req.body)});
+app.put("/servicos/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
+    const {telefone,tipo, valor, prestadores_id
+        }= req.body;
+    pool.query(
+        "UPDATE servicos SET telefone = $2, tipo = $3, valor = $4, prestadores_id = $5 WHERE id = $1",
+        [id, telefone,tipo, valor, prestadores_id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`usuario alterado com id: ${id}`);
+        }
+    );
+});
+app.post("/servicos",(req, res)=>{
+    const {telefone,tipo, valor, prestadores_id
+        }= req.body;
+    pool.query(
+        "INSERT INTO servicos (telefone, tipo, valor, prestadores_id) VALUES($1, $2, $3, $4)",
+        [telefone,tipo,valor,prestadores_id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`usuario adicionado com id: ${results.insertId}`);
+
+        }
+    );
+});
 
 
 
 
-app.get("/clientes",(req,res)=>{return res.send([{id:3, tel:"898985659",nome:"Joari", endereço:"céu",CPF:"864454321"},{id:1, tel:"1013467631", nome:"juju", endereço:"Cedro",CPF:"131345464"}]);});
+app.get("/clientes",(req,res)=>{
+    pool.query("SELECT * FROM clientes",(error,results)=>{
+            if(error){
+                throw error;
+            }
+            res.json(results.rows);
+    });
+});
 
-app.get("/clientes/:id",(req, res)=>{return res.json({id:req.params.id, nome:"Joari",tel:"898985659",CPF:"864454321",endereço:"céu"})});
+app.get("/clientes/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
 
-app.delete("/clientes/:id",(req, res)=>{return res.json({message:"cliente removido"})});
+    pool.query(
+        "SELECT * FROM clientes WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.json(results.rows);
+        }
+    );
+});
 
-app.put("/clientes/:id",(req, res)=>{return res.json(req.body)});
+app.delete("/clientes/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
 
-app.post("/clientes",(req, res)=>{return res.json(req.body)});
+    pool.query(
+        "DELETE FROM clientes WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.send(`cliente deletado com ID: ${id}` );
+        }
+    );
+});
+
+app.put("/clientes/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
+    const {
+        nome, cpf, endereco, telefone
+        }= req.body;
+    pool.query(
+        "UPDATE clientes SET nome = $2, cpf = $3, endereco = $4, telefone = $5 WHERE id = $1",
+        [id, nome, cpf, endereco, telefone],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`cliente alterado com id: ${id}`);
+        }
+    );
+});
+
+app.post("/clientes",(req, res)=>{
+    const {nome, cpf, endereco, telefone
+        }= req.body;
+
+
+    pool.query(
+        "INSERT INTO clientes (nome, cpf, endereco, telefone) VALUES($1, $2, $3, $4)",
+        [nome, cpf, endereco, telefone],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`cliente adicionado com id: ${results.insertId}`);
+
+        }
+    );
+});
 
 
 
 
-app.get("/animais",(req,res)=>{return res.send([{id:3, tipo:"dog",nome:"ari", raca:"bjbj",cor:"preto",peso:"25kg",cliente_id:1},{id:3, tipo:"cat",nome:"ira", raca:"ratom",cor:"cinza",peso:"5kg",cliente_id:2}]);});
+app.get("/animais",(req,res)=>{
+    pool.query("SELECT * FROM animais",(error,results)=>{
+            if(error){
+                throw error;
+            }
+            res.json(results.rows);
+    });
+});
 
-app.get("/animais/:id",(req, res)=>{return res.json({id:req.params.id, tipo:"dog",nome:"ari", raca:"bjbj",cor:"preto",peso:"25kg",cliente_id:1})});
+app.get("/animais/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
 
-app.delete("/animais/:id",(req, res)=>{return res.json({message:"animal removido"})});
+    pool.query(
+        "SELECT * FROM animais WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.json(results.rows);
+        }
+    );
+});
 
-app.put("/animais/:id",(req, res)=>{return res.json(req.body)});
+app.delete("/animais/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
 
-app.post("/animais",(req, res)=>{return res.json(req.body)});
+    pool.query(
+        "DELETE FROM animais WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.send(`animal deletado com ID: ${id}` );
+        }
+    );
+});
+
+app.put("/animais/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
+    const {
+        tipo, nome, raca, cor, peso, cliente_id
+        }= req.body;
+    pool.query(
+        "UPDATE animais SET tipo = $2, nome = $3, raca = $4, cor = $5, peso = $6, cliente_id = $7 WHERE id = $1",
+        [id,tipo, nome, raca, cor, peso, cliente_id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`animal alterado com id: ${id}`);
+        }
+    );
+});
+
+app.post("/animais",(req, res)=>{
+    const {tipo, nome, raca, cor, peso, cliente_id
+        }= req.body;
+    pool.query(
+        "INSERT INTO animais (tipo, nome, raca, cor, peso, cliente_id) VALUES($1, $2, $3, $4, $5, $6)",
+        [tipo, nome, raca, cor, peso, cliente_id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`animal adicionado com id: ${results.insertId}`);
+
+        }
+    );
+});
 
 
 
-app.get("/prestadores",(req,res)=>{return res.send([{id:3, CPF:"13213543",nome:"Raposo", endereço:"arraial",tel:"468745432"},{id:3, CPF:"465464324",nome:"Gabiru", endereço:"Porão",tel:"465713467"}]);});
+app.get("/prestadores",(req,res)=>{
+    pool.query("SELECT * FROM prestadores",(error,results)=>{
+            if(error){
+                throw error;
+            }
+            res.json(results.rows);
+    });
+});
 
-app.get("/prestadores/:id",(req, res)=>{return res.json({id:req.params.id, CPF:"13213543",nome:"Raposo", endereço:"arraial",tel:"468745432"})});
+app.get("/prestadores/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
 
-app.delete("/prestadores/:id",(req, res)=>{return res.json({message:"prestador removido"})});
+    pool.query(
+        "SELECT * FROM prestadores WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.json(results.rows);
+        }
+    );
+});
 
-app.put("/prestadores/:id",(req, res)=>{return res.json(req.body)});
+app.delete("/prestadores/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
 
-app.post("/prestadores",(req, res)=>{return res.json(req.body)});
+    pool.query(
+        "DELETE FROM prestadores WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.send(`prestador deletado com ID: ${id}` );
+        }
+    );
+});
 
+app.put("/prestadores/:id",(req, res)=>{
+    const id = parseInt(req.params.id);
+    const {
+        nome, cpf, endereco, telefone
+        }= req.body;
+    pool.query(
+        "UPDATE prestadores SET nome = $2, nome = $3, cpf = $4, endereco = $5, telefone = $6 WHERE id = $1",
+        [id, nome, cpf, endereco, telefone],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`prestador alterado com id: ${id}`);
+        }
+    );
+});
 
+app.post("/prestadores",(req, res)=>{
+    const { nome, cpf, endereco, telefone
+        }= req.body;
+    pool.query(
+        "INSERT INTO prestadores (nome, cpf, endereco, telefone) VALUES($1, $2, $3, $4)",
+        [nome, cpf, endereco, telefone],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`prestador adicionado com id: ${results.insertId}`);
+
+        }
+    );
+});
+app.get("/serv_prestado",(req,res)=>{
+    pool.query("SELECT * FROM serv_prestado",(error,results)=>{
+            if(error){
+                throw error;
+            }
+            res.json(results.rows);
+    });
+});
+
+app.get("/serv_prestado/:id",(req,res) =>{
+    const id = parseInt(req.params.id);
+
+    pool.query(
+        "SELECT * FROM serv_prestado WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.json(results.rows);
+        }
+    );
+});
+
+app.delete("/serv_prestado/:id",(req,res) =>{
+    const id = parseInt(req.params.id);
+
+    pool.query(
+        "DELETE FROM serv_prestado WHERE id = $1",
+        [id],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.send(`servico prestado deletado com ID: ${id}` );
+        }
+    );
+});
+
+app.put("/serv_prestado/:id",(req,res) =>{
+    const id = parseInt(req.params.id);
+    const {
+        prestadores_id, servicos_id, clientes_id, animais_id, data, horario, duracao, valor, situacao
+        }= req.body;
+    pool.query(
+        "UPDATE serv_prestado SET prestadores_id = $2, servicos_id = $3, clientes_id = $4,animais_id = $5, data = $6, horario = $7, duracao = $8, valor = $9, situacao = $10  WHERE id = $1",
+        [id, prestadores_id, servicos_id, clientes_id, animais_id, data, horario, duracao, valor, situacao],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`servico prestado alterado com id: ${id}`);
+        }
+    );
+});
+
+app.post("/serv_prestado",(req,res) =>{
+    const {prestadores_id, servicos_id, clientes_id, animais_id, data, horario, duracao, valor, situacao
+        }= req.body;
+    pool.query(
+        "INSERT INTO serv_prestado (prestadores_id, servicos_id, clientes_id, animais_id, data, horario, duracao, valor, situacao) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+        [prestadores_id, servicos_id, clientes_id, animais_id, data, horario, duracao, valor, situacao],
+        (error,results) => {
+            if (error){
+                throw error;
+            }
+            res.status(201).send(`servico prestado adicionado com id: ${results.insertId}`);
+
+        }
+    );
+});
 // ROTAS DA API FUNCIONANOD COM ROTAS USUARIOS//
 
 
